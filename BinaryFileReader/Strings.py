@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 ###################
-#    This file found strings in binary file.
-#    Copyright (C) 2021  Maurice Lambert
+#    This file exports strings from binary file.
+#    Copyright (C) 2021, 2025  Maurice Lambert
 
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -19,165 +19,250 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ###################
 
-""" This file found strings in binary file.
+"""
+This file exports strings from binary file.
 
->>> with open("test", 'wb') as f: f.write(b"\\x00\\x01abcde\\x00\\x01")
-9
->>> strings = Strings("test")
+~# python3 -m doctest -v Strings.py
+
+2 items had no tests:
+    Strings.Strings.__init__
+    Strings.main
+4 items passed all tests:
+   5 tests in Strings
+   5 tests in Strings.Strings
+  22 tests in Strings.Strings.analyse_character
+   5 tests in Strings.Strings.reader
+37 tests in 6 items.
+37 passed and 0 failed.
+Test passed.
+
+>>> from io import BytesIO
+>>> strings = Strings(BytesIO(b"\\x00\\x01abcde\\x00ghijk\\x01lmnopqrst\\x00"))
 >>> for line in strings.reader(): print(line)
 abcde
->>> import os; os.remove("test")
+lmnopqrst
+>>> strings = Strings(BytesIO(b"\\x00\\x01abcde\\x00ghijk\\x01lmnopqrst\\x00"), null_terminated=False)
+>>> for line in strings.reader(): print(line)
+abcde
+ghijk
+lmnopqrst
+>>> 
 """
 
-from typing import Generator
+__version__ = "1.0.0"
+__author__ = "Maurice Lambert"
+__author_email__ = "mauricelambert434@gmail.com"
+__maintainer__ = "Maurice Lambert"
+__maintainer_email__ = "mauricelambert434@gmail.com"
+__description__ = """
+This file exports strings from binary file.
+"""
+__url__ = "https://github.com/mauricelambert/BinaryFileReader"
+
+__all__ = ["Strings"]
+
+__license__ = "GPL-3.0 License"
+__copyright__ = """
+BinaryFileReader  Copyright (C) 2021, 2025  Maurice Lambert
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions.
+"""
+copyright = __copyright__
+license = __license__
+
+print(copyright)
+
 from argparse import ArgumentParser
+from typing import Iterator, Tuple
+from _io import _BufferedIOBase
 
 
 class Strings:
+    """
+    This class exports strings from binary file.
 
-    """This class implement a Strings getter from binary file.
-
-    >>> with open("test", 'wb') as f: f.write(b"abc\\x00\\x01ab\\x00cdeF\\x00\\x01")
-    14
-    >>> strings = Strings("test", chars=b"abcde", minimum_chars=3, number_bad_chars=1, accepted_bad_chars=b"\\x00")
+    >>> from io import BytesIO
+    >>> strings = Strings(BytesIO(b"\\x00\\x01abcde\\x00ghijk\\x01lmnopqrst\\x00"))
     >>> for line in strings.reader(): print(line)
-    abc
     abcde
-    >>> import os; os.remove("test")
+    lmnopqrst
+    >>> strings = Strings(BytesIO(b"\\x00\\x01abcde\\x00ghijk\\x01lmnopqrst\\x00"), null_terminated=False)
+    >>> for line in strings.reader(): print(line)
+    abcde
+    ghijk
+    lmnopqrst
+    >>>
     """
 
     def __init__(
         self,
-        filename: str,
-        chars: bytes = (
-            b"0123456789"
-            b"abcdefghijklmnopqrstuvwxyz"
-            b"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-            b"!\"\#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ "
-        ),
-        minimum_chars: int = 5,
-        number_bad_chars: int = 0,
-        accepted_bad_chars: bytes = b"",
-        encoding: str = "latin1",
+        file: _BufferedIOBase,
+        minimum_length: int = 5,
+        null_terminated: bool = True,
     ):
-        self.chars = chars
-        self.minimum_chars = minimum_chars
-        self.filename = filename
-        self.number_bad_chars = number_bad_chars
-        self.accepted_bad_chars = accepted_bad_chars
+        self.file = file
+        self.minimum_length = minimum_length
         self.current_string: str = ""
-        self.current_bad_chars: int = 0
-        self.encoding = encoding
+        self.current_unicode_string: str = ""
+        self.null_terminated = null_terminated
+        self._temp_unicode_char = None
 
-    def reader(self) -> Generator[str, None, None]:
+    def reader(self) -> Iterator[str]:
+        """
+        This function reads character after character and yield strings.
 
-        """This function read file 1 chars by 1 chars and yield lines.
-
-        >>> with open("test", 'wb') as f: f.write(b"abc\\x00\\x01ab\\x00cdeF\\x00\\x01")
-        14
-        >>> strings = Strings("test", chars=b"abcde", minimum_chars=3, number_bad_chars=1, accepted_bad_chars=b"\\x00")
+        >>> from io import BytesIO
+        >>> strings = Strings(BytesIO(b"\\x00\\x01abcde\\x00ghijk\\x01lmnopqrst\\x00"))
         >>> for line in strings.reader(): print(line)
-        abc
         abcde
-        >>> import os; os.remove("test")
+        lmnopqrst
+        >>> strings = Strings(BytesIO(b"\\x00\\x01abcde\\x00ghijk\\x01lmnopqrst\\x00"), null_terminated=False)
+        >>> for line in strings.reader(): print(line)
+        abcde
+        ghijk
+        lmnopqrst
+        >>>
         """
 
-        char = b" "
+        char = self.file.read(1)
 
-        with open(self.filename, "rb") as file:
-            while char:
-                char = file.read(1)
+        while char:
+            unicode_terminated, terminated = self.analyse_character(char)
 
-                if char:
-                    string = self.analyse_char(char)
-                    if string:
-                        yield string
+            if terminated:
+                if len(self.current_string) >= self.minimum_length:
+                    yield self.current_string
+                self.current_string = ""
 
-        if len(self.current_string) >= self.minimum_chars:
+            if unicode_terminated:
+                if len(self.current_unicode_string) >= self.minimum_length:
+                    yield self.current_unicode_string
+                self.current_unicode_string = ""
+
+            char = self.file.read(1)
+
+        if len(self.current_string) >= self.minimum_length:
             yield self.current_string
 
-    def analyse_char(self, char: bytes) -> str:
+        if len(self.current_unicode_string) >= self.minimum_length:
+            yield self.current_unicode_string
 
-        """This function analyse a byte and return strings found.
+    def analyse_character(self, char: bytes) -> Tuple[bool, bool]:
+        """
+        This function analyses a byte and returns boolean to know when a string is terminated.
 
         >>> strings = Strings(None)
-        >>> [strings.analyse_char(x) for x in (b"a", b"b", b"c", b"d", b"e", b"\\x00")]
-        [None, None, None, None, None, 'abcde']
-        >>> strings = Strings(None, number_bad_chars=1)
-        >>> [strings.analyse_char(x) for x in (b"a", b"b", b"\\x00", b"c", b"d", b"e", b"\\x00", b"\\x00")]
-        [None, None, None, None, None, None, None, 'abcde']
-        >>> strings = Strings(None, number_bad_chars=1, accepted_bad_chars=b"\\x00")
-        >>> [strings.analyse_char(x) for x in (b"a", b"b", b"\\x00", b"c", b"d", b"e", b"\\x00", b"\\x00")]
-        [None, None, None, None, None, None, None, 'abcde']
-        >>> strings = Strings(None)
-        >>> [strings.analyse_char(x) for x in (b"a", b"b", b"\\x00", b"c", b"d", b"e", b"\\x00", b"\\x00")]
-        [None, None, None, None, None, None, None, None]
-        >>> strings = Strings(None, number_bad_chars=1, accepted_bad_chars=b"\\x01")
-        >>> [strings.analyse_char(x) for x in (b"a", b"b", b"\\x00", b"c", b"d", b"e", b"\\x00", b"\\x00")]
-        [None, None, None, None, None, None, None, None]
+        >>> strings.analyse_character(b'a')
+        (False, False)
+        >>> strings.analyse_character(b'\\0')
+        (False, True)
+        >>> strings.current_string
+        'a'
+        >>> strings.analyse_character(b'\\0')
+        (False, True)
+        >>> strings.analyse_character(b'\\0')
+        (True, True)
+        >>> strings.current_unicode_string
+        'a'
+        >>> strings.analyse_character(b'\\1')
+        (False, False)
+        >>> strings.current_string
+        ''
+        >>> strings.current_unicode_string
+        ''
+        >>> strings = Strings(None, null_terminated=False)
+        >>> strings.analyse_character(b'a')
+        (False, False)
+        >>> strings.analyse_character(b'\\0')
+        (False, True)
+        >>> strings.current_string
+        'a'
+        >>> strings.analyse_character(b'\\0')
+        (False, True)
+        >>> strings.analyse_character(b'\\0')
+        (True, True)
+        >>> strings.current_unicode_string
+        'a'
+        >>> strings.analyse_character(b'a')
+        (False, False)
+        >>> strings.analyse_character(b'\\1')
+        (False, True)
+        >>> strings.analyse_character(b'a')
+        (False, False)
+        >>> strings.analyse_character(b'\\0')
+        (False, True)
+        >>> strings.analyse_character(b'\\1')
+        (True, True)
+        >>> 
         """
 
-        if char in self.chars:
-            self.current_string += char.decode(self.encoding)
-            self.current_bad_chars = 0
-            return
+        char = char[0]
 
-        elif (self.accepted_bad_chars and char in self.accepted_bad_chars) or (
-            not self.accepted_bad_chars
-        ):
-            self.current_bad_chars += 1
-            string = self.current_string
+        if 32 <= char <= 126:
+            self.current_string += chr(char)
+            self._temp_unicode_char = char
+            return False, False
+        elif not char:
 
-            if (
-                self.current_bad_chars > self.number_bad_chars
-                and len(string) >= self.minimum_chars
-            ):
-                self.current_string = ""
-                return string
+            if self._temp_unicode_char:
+                self.current_unicode_string += chr(self._temp_unicode_char)
+                self._temp_unicode_char = None
+                return False, True
+            elif self._temp_unicode_char is None:
+                if self.current_unicode_string:
+                    self._temp_unicode_char = char
+                return False, True
+            return True, True
 
-            elif self.current_bad_chars > self.number_bad_chars:
-                self.current_string = ""
-                return
-
-        else:
-            string = self.current_string
-            self.current_bad_chars = 0
+        elif self.null_terminated:
             self.current_string = ""
+            self.current_unicode_string = ""
+            return False, False
+        else:
+            if self._temp_unicode_char:
+                self._temp_unicode_char = None
+                return False, True
+            return True, True
 
-            if len(string) >= self.minimum_chars:
-                return string
-            return
 
-
-def main() -> None:
-
-    """This function parse arguments and return error."""
+def main() -> int:
+    """
+    This function runs the module from the command line.
+    """
 
     parser = ArgumentParser()
     parser.add_argument("filename", help="Filename of binary file.")
     parser.add_argument(
-        "--min-chars",
-        "-m",
+        "--minimum-length",
+        "--length",
+        "-l",
+        "-n",
         type=int,
         default=5,
-        help="Minimum length to print a string.",
+        help="Minimum length to extract a string.",
     )
     parser.add_argument(
-        "--max-bad-chars",
-        "-M",
-        type=int,
-        default=0,
-        help="Maximum bad characters in string.",
+        "--non-null-terminated",
+        "-t",
+        default=False,
+        action="store_true",
+        help="Non null terminated.",
     )
-    args = parser.parse_args()
+    arguments = parser.parse_args()
 
-    strings = Strings(
-        args.filename, minimum_chars=args.min_chars, number_bad_chars=args.max_bad_chars
-    )
-    for line in strings.reader():
-        print(line)
-    exit(0)
+    with open(arguments.filename, 'rb') as file:
+        strings = Strings(
+            file,
+            minimum_length=arguments.minimum_length,
+            null_terminated=not arguments.non_null_terminated,
+        )
+
+        for line in strings.reader():
+            print(line)
+
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    exit(main())

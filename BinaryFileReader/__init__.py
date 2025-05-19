@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-""" This package read binary file to get all strings or read it like a hexareader. """
+"""
+This package reads binary file to exports strings or prints content as hexadecimal.
+"""
 
 ###################
-#    This package read binary file to get all strings or read it like a hexareader.
-#    Copyright (C) 2021  Maurice Lambert
+#    This package reads binary file to exports strings or prints content as hexadecimal.
+#    Copyright (C) 2021, 2025  Maurice Lambert
 
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -21,10 +23,29 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ###################
 
-__version__ = "0.0.1"
-__all__ = [
-    "Strings", "get_strings", "HexaReader", "hexaread"
-]
+__version__ = "1.0.0"
+__author__ = "Maurice Lambert"
+__author_email__ = "mauricelambert434@gmail.com"
+__maintainer__ = "Maurice Lambert"
+__maintainer_email__ = "mauricelambert434@gmail.com"
+__description__ = """
+This module implements a hexadecimal reader.
+"""
+__url__ = "https://github.com/mauricelambert/BinaryFileReader"
+
+__all__ = ["Strings", "HexaReader", "get_strings", "hexaread"]
+
+__license__ = "GPL-3.0 License"
+__copyright__ = """
+BinaryFileReader  Copyright (C) 2021, 2025  Maurice Lambert
+This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under certain conditions.
+"""
+copyright = __copyright__
+license = __license__
+
+print(copyright)
 
 try:
     from .Strings import Strings, main as get_strings
@@ -32,12 +53,3 @@ try:
 except ImportError:
     from Strings import Strings, main as get_strings
     from HexaReader import HexaReader, main as hexaread
-
-print(
-"""
-BinaryFileReader  Copyright (C) 2021  Maurice Lambert
-This program comes with ABSOLUTELY NO WARRANTY.
-This is free software, and you are welcome to redistribute it
-under certain conditions.
-"""
-)

@@ -1,4 +1,3 @@
 [console_scripts]
-GetStrings = BinaryFileReader:get_strings
 HexaReader = BinaryFileReader:hexaread
-
+Strings = BinaryFileReader:get_strings
