@@ -142,9 +142,9 @@ with open("test.bin", 'rb') as file:
  - [HexaReader Documentation](https://mauricelambert.github.io/info/python/security/BinaryFileReader/HexaReader.html)
  - [HexaReader Python executable](https://mauricelambert.github.io/info/python/security/BinaryFileReader/HexaReader.pyz)
  - [HexaReader Python Windows executable](https://mauricelambert.github.io/info/python/security/BinaryFileReader/HexaReader.exe)
- - [MagicStrings Documentation](https://mauricelambert.github.io/info/python/security/BinaryFileReader/HexaReader.html)
- - [MagicStrings Python executable](https://mauricelambert.github.io/info/python/security/BinaryFileReader/HexaReader.pyz)
- - [MagicStrings Python Windows executable](https://mauricelambert.github.io/info/python/security/BinaryFileReader/HexaReader.exe)
+ - [MagicStrings Documentation](https://mauricelambert.github.io/info/python/security/BinaryFileReader/MagicStrings.html)
+ - [MagicStrings Python executable](https://mauricelambert.github.io/info/python/security/BinaryFileReader/MagicStrings.pyz)
+ - [MagicStrings Python Windows executable](https://mauricelambert.github.io/info/python/security/BinaryFileReader/MagicStrings.exe)
  - [Python executable](https://mauricelambert.github.io/info/python/security/BinaryFileReader/BinaryFileReader.pyz)
  - [Python Windows executable](https://mauricelambert.github.io/info/python/security/BinaryFileReader/BinaryFileReader.exe)
 
