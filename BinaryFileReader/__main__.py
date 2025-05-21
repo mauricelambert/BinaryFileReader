@@ -23,7 +23,7 @@ This package reads binary file to exports strings or prints content as hexadecim
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ###################
 
-__version__ = "1.0.0"
+__version__ = "3.0.0"
 __author__ = "Maurice Lambert"
 __author_email__ = "mauricelambert434@gmail.com"
 __maintainer__ = "Maurice Lambert"
@@ -33,7 +33,7 @@ This module implements a hexadecimal reader.
 """
 __url__ = "https://github.com/mauricelambert/BinaryFileReader"
 
-__all__ = ["Strings", "HexaReader", "get_strings", "hexaread"]
+__all__ = ["Strings", "HexaReader", "MagicStrings", "strings", "hexaread"]
 
 __license__ = "GPL-3.0 License"
 __copyright__ = """
@@ -47,17 +47,20 @@ license = __license__
 
 print(copyright)
 
-try:
-    from .Strings import Strings, main as get_strings
+if __package__:
+    from .Strings import Strings, main as strings
     from .HexaReader import HexaReader, main as hexaread
-except ImportError:
-    from Strings import Strings, main as get_strings
+    from .MagicStrings import MagicStrings, main as magic
+else:
+    from Strings import Strings, main as strings
     from HexaReader import HexaReader, main as hexaread
+    from MagicStrings import MagicStrings, main as magic
 
 from sys import argv, stderr
 
-help_message = """USAGE: python3 -m BinaryFileReader module filename
-    [module] must be "strings" or "hexareader"
+help_message = """USAGE: python3 -m BinaryFileReader module [options] filename
+    [module] must be "strings", "magic" or "hexareader"
+    [options] are optional and specific by modules
     [filename] must be an existing binary file
 """
 
@@ -71,11 +74,11 @@ def main() -> int:
         module = argv.pop(1).lower()
 
         if module == "strings":
-            get_strings()
-            return 0
+            return strings()
         elif module == "hexareader":
-            hexaread()
-            return 0
+            return hexaread()
+        elif module == "magic":
+            return magic()
 
     print(help_message, file=stderr)
     return 1

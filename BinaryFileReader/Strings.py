@@ -49,7 +49,7 @@ lmnopqrst
 >>> 
 """
 
-__version__ = "1.0.0"
+__version__ = "3.0.0"
 __author__ = "Maurice Lambert"
 __author_email__ = "mauricelambert434@gmail.com"
 __maintainer__ = "Maurice Lambert"
@@ -59,7 +59,7 @@ This file exports strings from binary file.
 """
 __url__ = "https://github.com/mauricelambert/BinaryFileReader"
 
-__all__ = ["Strings"]
+__all__ = ["Strings", "main"]
 
 __license__ = "GPL-3.0 License"
 __copyright__ = """
@@ -73,7 +73,7 @@ license = __license__
 
 print(copyright)
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from typing import Iterator, Tuple
 from _io import _BufferedIOBase
 
@@ -110,7 +110,7 @@ class Strings:
 
     def reader(self) -> Iterator[str]:
         """
-        This function reads character after character and yield strings.
+        This method reads character after character and yield strings.
 
         >>> from io import BytesIO
         >>> strings = Strings(BytesIO(b"\\x00\\x01abcde\\x00ghijk\\x01lmnopqrst\\x00"))
@@ -150,7 +150,8 @@ class Strings:
 
     def analyse_character(self, char: bytes) -> Tuple[bool, bool]:
         """
-        This function analyses a byte and returns boolean to know when a string is terminated.
+        This method analyses a byte and returns boolean to know when a
+        string is terminated.
 
         >>> strings = Strings(None)
         >>> strings.analyse_character(b'a')
@@ -194,7 +195,7 @@ class Strings:
         (False, True)
         >>> strings.analyse_character(b'\\1')
         (True, True)
-        >>> 
+        >>>
         """
 
         char = char[0]
@@ -226,12 +227,16 @@ class Strings:
             return True, True
 
 
-def main() -> int:
+def parse_arguments(parser: ArgumentParser = None) -> Namespace:
     """
-    This function runs the module from the command line.
+    This function parses command line arguments.
     """
 
-    parser = ArgumentParser()
+    if parser is None:
+        parser = ArgumentParser(
+            description="This script exports strings from binary file."
+        )
+
     parser.add_argument("filename", help="Filename of binary file.")
     parser.add_argument(
         "--minimum-length",
@@ -249,9 +254,17 @@ def main() -> int:
         action="store_true",
         help="Non null terminated.",
     )
-    arguments = parser.parse_args()
+    return parser.parse_args()
 
-    with open(arguments.filename, 'rb') as file:
+
+def main() -> int:
+    """
+    This function runs the module from the command line.
+    """
+
+    arguments = parse_arguments()
+
+    with open(arguments.filename, "rb") as file:
         strings = Strings(
             file,
             minimum_length=arguments.minimum_length,

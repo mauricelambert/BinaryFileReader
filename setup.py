@@ -2,10 +2,10 @@ from setuptools import setup, find_packages
 
 setup(
     name = "BinaryFileReader",
-    version = "1.0.0",
+    version = "3.0.0",
 
     packages = ["BinaryFileReader"],
-    install_requires = ["PytonToolsKit==1.2.4"],
+    install_requires = ["PytonToolsKit==1.2.4", "PegParser>=1.1.0", "RC4Encryption==0.0.2", "RC6Encryption==1.0.1"],
 
     author = "Maurice Lambert", 
     author_email = "mauricelambert434@gmail.com",
@@ -28,6 +28,9 @@ setup(
         "HexaReader Documentation": "https://mauricelambert.github.io/info/python/security/BinaryFileReader/HexaReader.html",
         "HexaReader Python Executable": "https://mauricelambert.github.io/info/python/security/BinaryFileReader/HexaReader.pyz",
         "HexaReader Windows Executable": "https://mauricelambert.github.io/info/python/security/BinaryFileReader/HexaReader.exe",
+        "MagicStrings Documentation": "https://mauricelambert.github.io/info/python/security/BinaryFileReader/MagicStrings.html",
+        "MagicStrings Python Executable": "https://mauricelambert.github.io/info/python/security/BinaryFileReader/MagicStrings.pyz",
+        "MagicStrings Windows Executable": "https://mauricelambert.github.io/info/python/security/BinaryFileReader/MagicStrings.exe",
         "Python Executable": "https://mauricelambert.github.io/info/python/security/BinaryFileReader/BinaryFileReader.pyz",
         "Python Windows Executable": "https://mauricelambert.github.io/info/python/security/BinaryFileReader/BinaryFileReader.exe",
     },
@@ -56,8 +59,10 @@ setup(
     scripts = [],
     entry_points = {
         'console_scripts': [
-            'Strings = BinaryFileReader:get_strings',
+            'Strings = BinaryFileReader:strings',
+            'MagicStrings = BinaryFileReader:magic',
             'HexaReader = BinaryFileReader:hexaread',
+            'BinaryFileReader = BinaryFileReader.__main__:main',
         ],
     },
 

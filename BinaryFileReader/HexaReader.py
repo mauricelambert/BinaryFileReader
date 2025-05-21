@@ -58,7 +58,7 @@ f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 fa fb fc fd fe ff   ................
 >>> 
 """
 
-__version__ = "1.0.0"
+__version__ = "3.0.0"
 __author__ = "Maurice Lambert"
 __author_email__ = "mauricelambert434@gmail.com"
 __maintainer__ = "Maurice Lambert"
@@ -68,7 +68,7 @@ This module implements a hexadecimal reader.
 """
 __url__ = "https://github.com/mauricelambert/BinaryFileReader"
 
-__all__ = ["Strings"]
+__all__ = ["HexaReader", "colors", "main"]
 
 __license__ = "GPL-3.0 License"
 __copyright__ = """
@@ -101,6 +101,7 @@ colors: Dict[str, str] = {
     "abcdefghijklmnopqrstuvwxyzABCDEFIJKLMNOPQRSTUVWXYZ": "GREEN",
     "0123456789": "CYAN",
     " !\"#$%&'()*+,-./:;<=>?[\\]^_{|}~`": "YELLOW",
+    "\0": "BLUE",
 }
 
 
@@ -154,7 +155,7 @@ class HexaReader:
 
     def reader(self) -> Iterator[str]:
         r"""
-        This function read file 16 chars by 16 chars and yield lines.
+        This method read file 16 chars by 16 chars and yield lines.
 
         >>> from io import BytesIO
         >>> hexareader = HexaReader(BytesIO(bytes(range(256))))
@@ -189,7 +190,7 @@ class HexaReader:
 
     def get_line_processor(self) -> Callable:
         """
-        This function return hexareader line from bytes.
+        This method return hexareader line from bytes.
 
         >>> hexareader = HexaReader(None)
         >>> hexareader.get_line_processor()(bytes(range(50, 66)))
@@ -209,7 +210,12 @@ class HexaReader:
                 if char in self.colors:
                     color = colors_map[self.colors[char]].value
                     hex_out += f"{base_color}{color}{char:0>2X}{self.reset} "
-                    ascii_out += base_color + color + chr(char) + self.reset
+                    ascii_out += (
+                        base_color
+                        + color
+                        + (chr(char) if 32 <= char <= 126 else ".")
+                        + self.reset
+                    )
                 else:
                     hex_out += f"{self.default_color}{char:0>2X}{self.reset} "
                     ascii_out += self.default_color + "." + self.reset

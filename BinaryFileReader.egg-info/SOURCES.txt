@@ -6,6 +6,7 @@ requirements.txt
 setup.cfg
 setup.py
 BinaryFileReader/HexaReader.py
+BinaryFileReader/MagicStrings.py
 BinaryFileReader/Strings.py
 BinaryFileReader/__init__.py
 BinaryFileReader/__main__.py

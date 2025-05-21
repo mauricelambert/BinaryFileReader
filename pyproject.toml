@@ -4,8 +4,8 @@
 
 [project]
 name = "BinaryFileReader"
-version = "1.0.0"
-dependencies = ["PythonToolsKit==1.2.4"]
+version = "3.0.0"
+dependencies = ["PythonToolsKit==1.2.4", "PegParser>=1.1.0", "RC4Encryption==0.0.2", "RC6Encryption==1.0.1"]
 authors = [
     {name = "Maurice Lambert", email = "mauricelambert434@gmail.com"},
 ]
@@ -40,8 +40,10 @@ license = {text = "GPL-3.0 License"}
 requires-python = ">=3.8"
 
 [project.scripts]
-Strings = "BinaryFileReader:get_strings"
+Strings = "BinaryFileReader:strings"
+MagicStrings = "BinaryFileReader:magic"
 HexaReader = "BinaryFileReader:hexaread"
+BinaryFileReader = "BinaryFileReader.__main__:main"
 
 [project.urls]
 "Github" = "https://github.com/mauricelambert/BinaryFileReader"
@@ -51,6 +53,9 @@ HexaReader = "BinaryFileReader:hexaread"
 "HexaReader Documentation" = "https://mauricelambert.github.io/info/python/security/BinaryFileReader/HexaReader.html"
 "HexaReader Python Executable" = "https://mauricelambert.github.io/info/python/security/BinaryFileReader/HexaReader.pyz"
 "HexaReader Windows Executable" = "https://mauricelambert.github.io/info/python/security/BinaryFileReader/HexaReader.exe"
+"MagicStrings Documentation" = "https://mauricelambert.github.io/info/python/security/BinaryFileReader/MagicStrings.html"
+"MagicStrings Python Executable" = "https://mauricelambert.github.io/info/python/security/BinaryFileReader/MagicStrings.pyz"
+"MagicStrings Windows Executable" = "https://mauricelambert.github.io/info/python/security/BinaryFileReader/MagicStrings.exe"
 "Python Executable" = "https://mauricelambert.github.io/info/python/security/BinaryFileReader/BinaryFileReader.pyz"
 "Python Windows Executable" = "https://mauricelambert.github.io/info/python/security/BinaryFileReader/BinaryFileReader.exe"
 
