@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = "BinaryFileReader",
-    version = "3.0.1",
+    version = "3.0.2",
 
     packages = ["BinaryFileReader"],
     install_requires = ["PytonToolsKit==1.2.4", "PegParser>=1.1.3", "RC4Encryption==0.0.2", "RC6Encryption==1.0.1"],
