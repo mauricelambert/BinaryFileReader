@@ -23,7 +23,7 @@
 This file process exported strings recursively from binary file.
 """
 
-__version__ = "3.0.0"
+__version__ = "3.0.3"
 __author__ = "Maurice Lambert"
 __author_email__ = "mauricelambert434@gmail.com"
 __maintainer__ = "Maurice Lambert"
@@ -208,7 +208,8 @@ class MagicStrings(Strings):
                 self.process_level += 1
                 first = False
 
-        self.process_level -= 1
+        if not first:
+            self.process_level -= 1
 
     def decrypt_string(self, result: Result) -> Iterator[bytes]:
         """
@@ -241,19 +242,8 @@ class MagicStrings(Strings):
         keys = []
         for name, format in this_formats.items():
             match = format.match(string_encoded)
-            match_length = match and len(match)
 
-            if (
-                not match
-                or (
-                    self.null_terminated
-                    and match_length != len(string_encoded)
-                )
-                or (
-                    not self.null_terminated
-                    and match_length < self.minimum_length
-                )
-            ):
+            if match is None or len(match) < self.minimum_length:
                 continue
 
             try:
@@ -329,7 +319,8 @@ class MagicStrings(Strings):
                 steps_crypto.append(step_crypto_data)
                 first = False
 
-        self.process_level -= 1
+        if not first:
+            self.process_level -= 1
 
     def new(
         self, data: bytes, steps: List[Step], last_step_decrypt: bool
@@ -388,7 +379,7 @@ class MagicStrings(Strings):
                 yield function(data, key)
 
 
-def single_add_bytes(data: bytes, key: int) -> Union[bytes, None]:
+def single_add_bytes(data: bytes, key: int) -> bytes:
     """
     This function encrypts or decrypts single key
     character substitution cypher on all bytes.
@@ -409,12 +400,11 @@ def single_add_bytes(data: bytes, key: int) -> Union[bytes, None]:
     return bytes(new_data)
 
 
-def single_add_letters(data: bytes, key: int) -> Union[bytes, None]:
+def single_add_letters(data: bytes, key: int) -> bytes:
     """
     This function encrypts or decrypts single key
     character substitution cypher on letters only.
     """
-
     return bytes(
         [
             (
@@ -431,7 +421,7 @@ def single_add_letters(data: bytes, key: int) -> Union[bytes, None]:
     )
 
 
-def single_xor_bytes(data: bytes, key: int) -> Union[bytes, None]:
+def single_xor_bytes(data: bytes, key: int) -> bytes:
     """
     This function encrypts or decrypts single key
     character xor cypher.
@@ -571,6 +561,7 @@ def init_formats(arguments: Namespace) -> int:
             )
         }
         arguments.do_not_print.append("hex")
+        arguments.do_not_print.append("base32")
         arguments.do_not_print.append("base64")
 
     for format in (
