@@ -23,7 +23,7 @@
 This file process exported strings recursively from binary file.
 """
 
-__version__ = "3.0.3"
+__version__ = "3.0.4"
 __author__ = "Maurice Lambert"
 __author_email__ = "mauricelambert434@gmail.com"
 __maintainer__ = "Maurice Lambert"
@@ -133,6 +133,7 @@ class MagicStrings(Strings):
     ):
         super().__init__(*args, **kwargs)
         self.process_level = process_level
+        self.this_lasts = {}
         self.keys = keys
 
     def magic(self) -> Iterator[Result]:
@@ -179,9 +180,10 @@ class MagicStrings(Strings):
         steps_crypto.append(step_crypto_string)
         steps_truncated = result.steps.copy()
         steps_truncated.append(step_string_truncated)
-        this_formats = formats.copy()
+        self.this_lasts.clear()
 
         while len(result.string) >= self.minimum_length:
+            this_formats = formats.copy()
             yield from self.decode_string(
                 result.string,
                 result.steps,
@@ -239,7 +241,7 @@ class MagicStrings(Strings):
         The method checks the string for all formats.
         """
 
-        keys = []
+        keys = set()
         for name, format in this_formats.items():
             match = format.match(string_encoded)
 
@@ -251,8 +253,10 @@ class MagicStrings(Strings):
             except Exception as e:
                 continue
 
-            if match in self.lasts.get(name, b""):
-                self.lasts[name] = match
+            if first:
+                keys.add(name)
+
+            if match in self.lasts.get(name, b"") or match in self.this_lasts.get(name, b""):
                 continue
 
             result = Result(
@@ -264,6 +268,7 @@ class MagicStrings(Strings):
             )
             yield result
             self.lasts[name] = match
+            self.this_lasts[name] = match
 
             if data != match:
                 self.process_level += 1
@@ -271,8 +276,6 @@ class MagicStrings(Strings):
                 temp_steps.append(Step("decode", name))
                 yield from self.process_data(data, temp_steps, False)
                 self.process_level -= 1
-            elif first:
-                keys.append(name)
 
         for name in keys:
             del this_formats[name]

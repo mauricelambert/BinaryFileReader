@@ -1,6 +1,6 @@
 Metadata-Version: 2.2
 Name: BinaryFileReader
-Version: 3.0.3
+Version: 3.0.4
 Summary: This package reads binary file to exports strings or prints content as hexadecimal.
 Home-page: https://github.com/mauricelambert/BinaryFileReader
 Download-URL: https://mauricelambert.github.io/info/python/security/BinaryFileReader/BinaryFileReader.pyz

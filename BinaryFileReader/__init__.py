@@ -23,7 +23,7 @@ This package reads binary file to exports strings or prints content as hexadecim
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ###################
 
-__version__ = "3.0.3"
+__version__ = "3.0.4"
 __author__ = "Maurice Lambert"
 __author_email__ = "mauricelambert434@gmail.com"
 __maintainer__ = "Maurice Lambert"
